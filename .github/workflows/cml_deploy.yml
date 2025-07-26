@@ -58,10 +58,25 @@ jobs:
     - name: Build and Push Docker image
       id: build-image
       run: |
-        IMAGE_NAME="${{ env.ARTIFACT_REGISTRY_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/iris-classifier:${{ github.sha }}"
+        # Sanitize variables to remove any invisible characters, newlines, or carriage returns
+        LOCATION_CLEAN=$(echo -n "${{ env.ARTIFACT_REGISTRY_LOCATION }}" | tr -d '\n\r\t[:space:]')
+        PROJECT_ID_CLEAN=$(echo -n "${{ env.GCP_PROJECT_ID }}" | tr -d '\n\r\t[:space:]')
+        REPO_CLEAN=$(echo -n "${{ env.ARTIFACT_REGISTRY_REPO }}" | tr -d '\n\r\t[:space:]')
+
+        # Check if any of the essential variables are empty
+        if [ -z "$LOCATION_CLEAN" ] || [ -z "$PROJECT_ID_CLEAN" ] || [ -z "$REPO_CLEAN" ]; then
+          echo "Error: One or more required environment variables (ARTIFACT_REGISTRY_LOCATION, GCP_PROJECT_ID, ARTIFACT_REGISTRY_REPO) are not set."
+          exit 1
+        fi
+
+        IMAGE_NAME="${LOCATION_CLEAN}-docker.pkg.dev/${PROJECT_ID_CLEAN}/${REPO_CLEAN}/iris-classifier:${{ github.sha }}"
+        
+        echo "Building image with sanitized name: $IMAGE_NAME"
+
         docker build -t $IMAGE_NAME .
         docker push $IMAGE_NAME
         echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_OUTPUT
+
 
     - name: Deploy to GKE
       run: |
