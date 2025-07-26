@@ -58,7 +58,7 @@ jobs:
     - name: Build and Push Docker image
       id: build-image
       run: |
-        IMAGE_NAME="mlops-week-6-21f2000926"
+        IMAGE_NAME="${{ env.ARTIFACT_REGISTRY_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/iris-classifier:${{ github.sha }}"
         docker build -t $IMAGE_NAME .
         docker push $IMAGE_NAME
         echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_OUTPUT
