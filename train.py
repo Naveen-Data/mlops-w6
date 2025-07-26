@@ -28,7 +28,7 @@ def train_and_evaluate():
         exit(1)
     print("Data loaded successfully.")
 
-    print("Splitting data....")
+    print("Splitting data...")
     train, test = train_test_split(data, test_size=0.4, stratify=data['species'], random_state=42)
     X_train = train[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']]
     y_train = train.species
