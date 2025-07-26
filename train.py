@@ -20,7 +20,7 @@ def train_and_evaluate():
     """
     os.makedirs(MODEL_DIR, exist_ok=True)
 
-    print(f"Loading data from {DATA_PATH}...")
+    print(f"Loading data from the given data path {DATA_PATH}...")
     try:
         data = pd.read_csv(DATA_PATH)
     except FileNotFoundError:
