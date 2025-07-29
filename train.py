@@ -20,13 +20,14 @@ def train_and_evaluate():
     """
     os.makedirs(MODEL_DIR, exist_ok=True)
 
-    print(f"Loading data {DATA_PATH}...")
+    print(f"Loading data from {DATA_PATH}...")
     try:
         data = pd.read_csv(DATA_PATH)
     except FileNotFoundError:
         print(f"Error: {DATA_PATH} not found.")
         exit(1)
-    print("Data loaded successfully.")
+    print("Data loaded successfully...")
+    
 
     print("Splitting data...")
     train, test = train_test_split(data, test_size=0.4, stratify=data['species'], random_state=42)
