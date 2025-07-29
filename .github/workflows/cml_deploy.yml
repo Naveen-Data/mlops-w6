@@ -139,12 +139,12 @@ jobs:
         cat locust_report_stats.csv | head -n 10 >> report.md
         echo "\`\`\`" >> report.md
 
-        - name: Commit Locust Report
-          run: |
-            git config --global user.email "actions@github.com"
-            git config --global user.name "GitHub Actions"
-            git add report.md
-            git commit -m "Add Locust report"
-            git push
+    - name: Commit Locust Report
+      run: |
+        git config --global user.email "actions@github.com"
+        git config --global user.name "GitHub Actions"
+        git add report.md
+        git commit -m "Add Locust report"
+        git push
 
     
