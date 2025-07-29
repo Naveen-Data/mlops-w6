@@ -90,7 +90,7 @@ jobs:
     - name: Run Locust Load Test
       run: |
         pip install locust -q
-
+    
         echo "Waiting for external IP..."
         SERVICE_IP=""
         for i in {1..30}; do
@@ -102,30 +102,30 @@ jobs:
           echo "Still waiting..."
           sleep 10
         done
-
+    
         if [ -z "$SERVICE_IP" ]; then
           echo "Error: Timed out waiting for external IP."
           exit 1
         fi
-
+    
         echo "Waiting for app to be ready..."
         STATUS_CODE=""
         for i in {1..30}; do
-          STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://$SERVICE_IP/)
+          STATUS_CODE=$(curl --retry 5 --retry-delay 2 --connect-timeout 2 -s -o /dev/null -w "%{http_code}" http://$SERVICE_IP/)
           if [ "$STATUS_CODE" -eq 200 ]; then
-            echo "App is ready at http://$SERVICE_IP"
+            echo "✅ App is ready at http://$SERVICE_IP"
             break
           fi
-          echo "App not ready yet (HTTP $STATUS_CODE)... retrying..."
+          echo "⏳ App not ready yet (HTTP $STATUS_CODE)... retrying..."
           sleep 5
         done
-
+    
         if [ "$STATUS_CODE" -ne 200 ]; then
-          echo "App failed to respond with 200 OK after waiting. Exiting."
+          echo "❌ App failed to respond with 200 OK after waiting. Exiting."
           exit 1
         fi
-
-        echo "Running Locust test..."
+    
+        echo "🚀 Running Locust test..."
         locust -f locust/locust.py \
           --headless \
           --users 10 \
@@ -133,8 +133,9 @@ jobs:
           --run-time 1m \
           --host http://$SERVICE_IP \
           --csv locust_report
-
+    
         echo "### 🧪 Locust Load Test Summary" >> report.md
         echo "\`\`\`" >> report.md
         cat locust_report_stats.csv | head -n 10 >> report.md
         echo "\`\`\`" >> report.md
+    
