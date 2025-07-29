@@ -85,12 +85,11 @@ jobs:
         kubectl apply -f cluster/deploy.yml
         kubectl apply -f cluster/service.yml
         kubectl rollout status deployment/iris-classifier-deployment --timeout=300s
-    
-    - name: Generate CML Report
-      env:
-        REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Run Locust Load Test
       run: |
-        # Wait for the Load Balancer to provision an external IP
+        pip install locust -q
+    
         echo "Waiting for external IP..."
         SERVICE_IP=""
         for i in {1..30}; do
@@ -102,22 +101,22 @@ jobs:
           echo "Still waiting..."
           sleep 10
         done
-
+    
         if [ -z "$SERVICE_IP" ]; then
           echo "Error: Timed out waiting for external IP."
           exit 1
         fi
-
-        # Generate report
-        echo "🚀 Deployment to dev successful!" > report.md
-        echo "✅ Model API is available at: http://$SERVICE_IP" >> report.md
-        echo "### Example Usage:" >> report.md
-        echo "\`\`\`bash" >> report.md
-        echo "curl -X 'POST' 'http://$SERVICE_IP/predict' \\" >> report.md
-        echo "  -H 'accept: application/json' -H 'Content-Type: application/json' \\" >> report.md
-        echo "  -d '{\"sepal_length\": 5.1, \"sepal_width\": 3.5, \"petal_length\": 1.4, \"petal_width\": 0.2}'" >> report.md
+    
+        echo "Running Locust test..."
+        locust -f locust/locust.py \
+          --headless \
+          --users 10 \
+          --spawn-rate 2 \
+          --run-time 1m \
+          --host http://$SERVICE_IP \
+          --csv locust_report
+    
+        echo "### 🧪 Locust Load Test Summary" >> report.md
         echo "\`\`\`" >> report.md
-        
-        # Publish report as comment
-        npm install -g @dvcorg/cml
-        cml comment create report.md
+        cat locust_report_stats.csv | head -n 10 >> report.md
+        echo "\`\`\`" >> report.md
