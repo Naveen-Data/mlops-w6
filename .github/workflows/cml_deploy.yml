@@ -85,7 +85,8 @@ jobs:
         kubectl apply -f cluster/deploy.yml
         kubectl apply -f cluster/service.yml
         kubectl rollout status deployment/iris-classifier-deployment --timeout=300s
-  
+
+
     - name: Run Locust Load Test
       run: |
         pip install locust -q
